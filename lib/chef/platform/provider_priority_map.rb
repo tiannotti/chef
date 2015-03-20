@@ -78,6 +78,13 @@ class Chef
         priority_map.set(*args)
       end
 
+      def get_priority_map_for_resource(node, resource_name)
+        priority_map.get(node, resource_name.to_sym)
+      end
+
+      def set_priority_map_for_resource(node, resource_name, priority_array)
+        priority resource_name, priority_array, platform: node[:platform]
+      end
     end
   end
 end

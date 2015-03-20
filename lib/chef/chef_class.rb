@@ -15,7 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# WARNING: when adding require lines here you are creating tight coupling on a global that may be
+# NOTE: This class is not intended for internal use by the chef-client code.  Classes in
+# chef-client should still have objects like the node and run_context injected into them
+# via their initializers.  This class is still global state and will complicate writing
+# unit tests for internal Chef objects.  It is intended to be used only by recipe code.
+
+# NOTE: When adding require lines here you are creating tight coupling on a global that may be
 # included in many different situations and ultimately that ends in tears with circular requires.
 # Note the way that the run_context, provider_priority_map and resource_priority_map are "dependency
 # injected" into this class by other objects and do not reference the class symbols in those files
@@ -23,16 +28,86 @@
 
 class Chef
   class << self
-    # Chef.run_context
+
+    #
+    # Public API
+    #
+
+    # Get the node object
+    #
+    # @return [Chef::Node] node object of the chef-client run
+    attr_reader :node
+
+    # Get the run context
+    #
     # @return [Chef::RunContext] run_context of the chef-client run
-    attr_accessor :run_context
+    attr_reader :run_context
 
-    # Chef.provider_priority_map
-    # @return [Chef::Platform::ProviderPriorityMap] provider_priority_map of the chef-client run
-    attr_accessor :provider_priority_map
+    # Get the array of providers associated with a resource_name for the current node
+    #
+    # @param resource_name [Symbol] name of the resource as a symbol
+    # @return [Array<Class>] Priority Array of Provider Classes to use for the resource_name on the node
+    def get_priority_map_for_resource(resource_name)
+      @provider_priority_map.get_priority_map_for_resource(node, resource_name).dup
+    end
 
-    # Chef.resource_priority_map
-    # @return [Chef::Platform::ResourcePriorityMap] resource_priority_map of the chef-client run
-    attr_accessor :resource_priority_map
+    # Get the array of resources associated with a resource_name for the current node
+    #
+    # @param resource_name [Symbol] name of the resource as a symbol
+    # @return [Array<Class>] Priority Array of Resource Classes to use for the resource_name on the node
+    def get_priority_map_for_provider(resource_name)
+      @resource_priority_map.get_priority_map_for_provider(node, resource_name).dup
+    end
+
+    # Set the array of providers associated with a resource_name for the current node
+    #
+    # @param resource_name [Symbol] name of the resource as a symbol
+    # @param priority_array [Array<Class>] Array of Classes to set as the priority for resource_name on the node
+    # @return [Array<Class>] Modified Priority Array of Provider Classes to use for the resource_name on the node
+    def set_priority_map_for_resource(resource_name, priority_array)
+      @provider_priority_map.set_priority_map_for_resource(node, resource_name, priority_array).dup
+    end
+
+    # Get the array of resources associated with a resource_name for the current node
+    #
+    # @param resource_name [Symbol] name of the resource as a symbol
+    # @param priority_array [Array<Class>] Array of Classes to set as the priority for resource_name on the node
+    # @return [Array<Class>] Modified Priority Array of Resource Classes to use for the resource_name on the node
+    def set_priority_map_for_provider(resource_name, priority_array)
+      @resource_priority_map.set_priority_map_for_provider(node, resource_name, priority_array).dup
+    end
+
+    #
+    # Dependency Injection API (Private not Public)
+    # [ in the ruby sense these have to be public methods, but they are *NOT* for public consumption ]
+    #
+
+    # Sets the resource_priority_map (internal API, not for public use)
+    #
+    # @param resource_priority_map [Chef::Platform::ResourcePriorityMap]
+    def set_resource_priority_map(resource_priority_map)
+      @resource_priority_map = resource_priority_map
+    end
+
+    # Sets the provider_priority_map (internal API, not for public use)
+    #
+    # @param provider_priority_map [Chef::Platform::providerPriorityMap]
+    def set_provider_priority_map(provider_priority_map)
+      @provider_priority_map = provider_priority_map
+    end
+
+    # Sets the node object (internal API, not for public use)
+    #
+    # @param node [Chef::Node]
+    def set_node(node)
+      @node = node
+    end
+
+    # Sets the run_context object (internal API, not for public use)
+    #
+    # @param run_context [Chef::RunContext]
+    def set_run_context(run_context)
+      @run_context = run_context
+    end
   end
 end

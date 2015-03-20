@@ -55,14 +55,19 @@ class Chef
         @run_list_expansion = nil
       end
 
+      # This method injects the run_context and provider and resource priority
+      # maps into the Chef class.  The run_context has to be injected here, the provider and
+      # resource maps could be moved if a better place can be found to do this work.
+      #
+      # @param run_context [Chef::RunContext] the run_context to inject
       def setup_chef_class(run_context)
         # these slurp in the resource+provider world, so be exceedingly lazy about requiring them
         require 'chef/platform/provider_priority_map'
         require 'chef/platform/resource_priority_map'
 
-        Chef.run_context = run_context
-        Chef.provider_priority_map = Chef::Platform::ProviderPriorityMap.instance
-        Chef.resource_priority_map = Chef::Platform::ResourcePriorityMap.instance
+        Chef.set_run_context(run_context)
+        Chef.set_provider_priority_map(Chef::Platform::ProviderPriorityMap.instance)
+        Chef.set_resource_priority_map(Chef::Platform::ResourcePriorityMap.instance)
       end
 
       def setup_run_context(specific_recipes=nil)
