@@ -160,7 +160,7 @@ describe Chef::Recipe do
 
           it "selects one if it is given priority" do
             expect(Chef::Log).not_to receive(:warn)
-            Chef::Platform::ResourcePriorityMap.instance.priority :football, TottenhamHotspur, platform: "nbc_sports"
+            Chef::Platform::ResourcePriorityMap.instance.send(:priority, :football, TottenhamHotspur, platform: "nbc_sports")
             res1 = recipe.football "club world cup"
             expect(res1.name).to eql("club world cup")
             expect(res1).to be_a_kind_of(TottenhamHotspur)
@@ -168,7 +168,7 @@ describe Chef::Recipe do
 
           it "selects the other one if it is given priority" do
             expect(Chef::Log).not_to receive(:warn)
-            Chef::Platform::ResourcePriorityMap.instance.priority :football, Sounders, platform: "nbc_sports"
+            Chef::Platform::ResourcePriorityMap.instance.send(:priority, :football, Sounders, platform: "nbc_sports")
             res1 = recipe.football "club world cup"
             expect(res1.name).to eql("club world cup")
             expect(res1).to be_a_kind_of(Sounders)

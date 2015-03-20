@@ -8,6 +8,16 @@ class Chef
         load_default_map
       end
 
+      def get_priority_map_for_resource(node, resource_name)
+        priority_map.get(node, resource_name.to_sym)
+      end
+
+      def set_priority_map_for_resource(node, resource_name, priority_array)
+        priority resource_name.to_sym, priority_array.to_a, platform: node[:platform]
+      end
+
+      private
+
       def load_default_map
         require 'chef/providers'
 
@@ -76,14 +86,6 @@ class Chef
 
       def priority(*args)
         priority_map.set(*args)
-      end
-
-      def get_priority_map_for_resource(node, resource_name)
-        priority_map.get(node, resource_name.to_sym)
-      end
-
-      def set_priority_map_for_resource(node, resource_name, priority_array)
-        priority resource_name, priority_array, platform: node[:platform]
       end
     end
   end

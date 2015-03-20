@@ -84,7 +84,7 @@ class Chef
       if handlers.count >= 2
         # this magic stack ranks the providers by where they appear in the provider_priority_map, it is mostly used
         # to pick amongst N different ways to start init scripts on different debian/ubuntu systems.
-        priority_list = [ get_provider_priority_map(resource.resource_name, node) ].flatten.compact
+        priority_list = [ get_priority_map_for_resource(node, resource.resource_name) ].flatten.compact
         handlers = handlers.sort_by { |x| i = priority_list.index x; i.nil? ? Float::INFINITY : i }
         handlers = [ handlers.first ]
       end
@@ -106,12 +106,12 @@ class Chef
     end
 
     # dep injection hooks
-    def get_provider_priority_map(resource_name, node)
-      provider_priority_map.get(node, resource_name)
+    def get_priority_map_for_resource(node, resource_name)
+      provider_priority_map.get_priority_map_for_resource(node, resource_name)
     end
 
     def provider_priority_map
-      Chef::Platform::ProviderPriorityMap.instance.priority_map
+      Chef::Platform::ProviderPriorityMap.instance
     end
   end
 end
